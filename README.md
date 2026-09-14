@@ -1,70 +1,523 @@
 # Local Chat
 
-A minimal, offline, black-and-white desktop chat UI for local [Ollama](https://ollama.com) models — built with Electron. Once installed, it never talks to the internet: everything runs against your local Ollama server.
+A privacy-oriented desktop interface for locally hosted language models, implemented with Electron and integrated with Ollama.
 
-## Prerequisites
+Local Chat provides a minimal interface for interacting with language models running on the user's own machine. The application is designed around local execution and persistent local storage, with no requirement for a cloud-based AI service or external API credentials.
 
-- [Node.js](https://nodejs.org) 18+ and npm
-- [Ollama](https://ollama.com) installed and at least one model pulled, e.g.:
-  ```
-  ollama pull qwen2.5-coder:1.5b
-  ```
+The current implementation provides conversational interaction with Ollama models. The longer-term objective is to develop the application into a local AI development environment capable of analyzing software projects, generating and modifying source code, executing development workflows, and assisting with software engineering tasks under explicit user-controlled permissions.
 
-## Setup
+---
+
+## Overview
+
+Local Chat consists of three principal components:
+
+```text
+┌──────────────────────────────┐
+│          Local Chat          │
+│            Electron          │
+└──────────────┬───────────────┘
+               │
+               │ Local API
+               ▼
+┌──────────────────────────────┐
+│            Ollama            │
+│       Local Language Model   │
+└──────────────┬───────────────┘
+               │
+               ▼
+          Local Machine
+```
+
+Electron provides the graphical desktop environment, while Ollama provides the local model-serving infrastructure.
+
+The separation between the user interface and model execution allows the application to remain relatively lightweight while permitting users to select and operate different locally available models.
+
+---
+
+## Current Capabilities
+
+### Local Model Execution
+
+Local Chat communicates with an Ollama instance running on the user's machine.
+
+The application supports:
+
+* Local language-model inference
+* Model selection
+* Temperature configuration
+* System-prompt configuration
+* Persistent conversations
+* Conversation search
+* Response regeneration
+* Response copying
+* Response cancellation
+
+No cloud AI provider is required.
+
+### Desktop Application
+
+The application is implemented using Electron and is intended to operate as a conventional desktop application on Linux, Windows, and macOS.
+
+The interface intentionally follows a minimal visual design in order to reduce unnecessary interaction complexity and maintain emphasis on the conversational interface.
+
+### Persistent Storage
+
+Conversations and application settings are stored locally using Electron's operating-system-specific application data directory.
+
+No cloud synchronization mechanism is implemented.
+
+---
+
+# Privacy and Local Execution
+
+Local Chat is designed around a local-first architecture.
+
+The application communicates with a locally running Ollama server rather than transmitting prompts and conversations to a remote inference provider.
+
+Consequently, the privacy characteristics of the system are primarily determined by the local machine, its operating system, Ollama, and the models installed by the user.
+
+The application does not require:
+
+* An online account
+* An AI provider API key
+* Cloud synchronization
+* A remote database
+
+Internet access is not required for normal inference after the required software and models have been installed.
+
+---
+
+# Installation
+
+## Using a Release
+
+Users do not need Node.js, npm, or the source repository to use a packaged release.
+
+Download the appropriate release artifact from the GitHub Releases section.
+
+## Linux
+
+### Debian and Ubuntu
+
+Install the Debian package:
+
+```bash
+sudo dpkg -i local-chat_1.0.0_amd64.deb
+```
+
+The application can subsequently be launched from the desktop application menu or with:
+
+```bash
+local-chat
+```
+
+To remove the application:
+
+```bash
+sudo apt remove local-chat
+```
+
+### AppImage
+
+Make the AppImage executable:
+
+```bash
+chmod +x "Local Chat-1.0.0.AppImage"
+```
+
+Execute it:
+
+```bash
+./"Local Chat-1.0.0.AppImage"
+```
+
+AppImage does not require a conventional system installation and is therefore suitable for portable deployments.
+
+## Windows
+
+Download the `.exe` installer from the release page and execute it using the standard Windows installation procedure.
+
+## macOS
+
+Download the `.dmg` package from the release page and install the application using the standard macOS installation procedure.
+
+---
+
+# Ollama
+
+Local Chat requires Ollama as its model-serving backend.
+
+Install Ollama from:
+
+https://ollama.com
+
+After installation, download at least one compatible model.
+
+For example:
+
+```bash
+ollama pull qwen2.5-coder:1.5b
+```
+
+The installed model can subsequently be selected from the application's configuration interface.
+
+Ollama is not bundled with Local Chat. This separation is intentional because model requirements vary substantially according to available CPU, GPU, memory, and storage resources.
+
+---
+
+# Building From Source
+
+## Requirements
+
+The development environment requires:
+
+* Node.js 18 or later
+* npm
+* Ollama
+* At least one locally installed Ollama model
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Ahmed-bit-spec/GuiLocalAi.git
+```
+
+Change into the project directory:
+
+```bash
+cd GuiLocalAi
+```
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Start the development application:
+
+```bash
 npm start
 ```
 
-That's it — the app opens, checks for Ollama on `http://localhost:11434`, and lists your installed models in the header dropdown.
+---
 
-## Using it
+# Usage
 
-- **New chat** — top of the sidebar, or `Ctrl/Cmd+N`
-- **Search chats** — `Ctrl/Cmd+K` focuses the search box
-- **Stop a response** — click Stop, or press `Esc` while generating
-- **Change model / temperature / system prompt** — gear icon in the sidebar footer
-- **Regenerate / copy** — hover the buttons under the last assistant reply
+## Creating a Conversation
 
-Chats and settings are saved to disk under Electron's per-OS app-data folder (via `main.js`'s storage handlers), so they persist across restarts without any cloud sync.
+Create a new conversation from the sidebar.
 
-## Project structure
+Keyboard shortcut:
 
-```
-main.js          Electron main process — creates the window, talks to Ollama's HTTP API,
-                  streams responses back to the renderer, reads/writes chats & settings to disk
-preload.js       contextBridge — exposes a safe window.api to the renderer, wires up
-                  Markdown rendering (marked) for assistant messages
-renderer.js      All UI logic: chat state, DOM rendering, event handling
-index.html       App shell / layout
-styles/
-  tailwind.css   Precompiled Tailwind utilities (offline — no CDN)
-  app.css        Fonts, animations, scrollbars, light-theme overrides
+```text
+Ctrl + N
 ```
 
-## Customizing the look
+On macOS:
 
-The UI classes are Tailwind utilities compiled ahead of time into `styles/tailwind.css`, so there's no runtime dependency on the Tailwind CDN. If you edit `index.html` or `renderer.js` and add new utility classes, rebuild the stylesheet:
+```text
+Cmd + N
+```
+
+## Searching Conversations
+
+Focus the conversation search field with:
+
+```text
+Ctrl + K
+```
+
+On macOS:
+
+```text
+Cmd + K
+```
+
+## Cancelling Generation
+
+A running response can be cancelled using the Stop control or:
+
+```text
+Esc
+```
+
+## Configuration
+
+The settings interface provides control over:
+
+* Ollama model
+* Temperature
+* System prompt
+
+These parameters are stored locally and persist across application restarts.
+
+---
+
+# Building Distribution Packages
+
+Linux packages can be generated with:
 
 ```bash
-npx tailwindcss -i styles/tailwind-input.css -o styles/tailwind.css --minify
+npm run dist:linux
 ```
 
-## Building an installer to share with other people
-
-[electron-builder](https://www.electron.build/) is already configured in `package.json`. After `npm install`, build an installer for the platform you're on:
+Windows packages:
 
 ```bash
-npm run dist:win     # -> dist/Local Chat Setup <version>.exe   (NSIS installer)
-npm run dist:mac     # -> dist/Local Chat-<version>.dmg
-npm run dist:linux   # -> dist/Local Chat-<version>.AppImage and .deb
+npm run dist:win
 ```
 
-The finished file lands in `dist/`. That single file is what you hand to someone else — they run it like any other installer/app, no Node or npm required on their end.
+macOS packages:
 
-**Important limitation:** electron-builder can only reliably build for the OS it's running on (a Mac can build Mac + Linux, Windows builds Windows, etc.) unless you set up cross-compilation tooling (Wine for Windows builds on Linux/Mac, for example). If you need installers for all three platforms, the simplest path is running the matching `npm run dist:*` command on a machine (or CI runner, e.g. GitHub Actions) of each OS.
+```bash
+npm run dist:mac
+```
 
-**What each person still needs on their own machine:** Ollama itself. This app is a client for Ollama's local API — it doesn't bundle Ollama or any models. Each person you share it with needs to separately install Ollama (https://ollama.com/download) and pull at least one model (`ollama pull qwen2.5-coder:1.5b`) before the chat will work. There's no way around this without bundling and shipping model weights (multi-GB per model) inside your installer, which isn't practical for most distributions.
+Generated artifacts are placed in the `dist` directory.
 
-**Optional — a custom icon:** without one, electron-builder uses Electron's default icon. To set your own, add `build/icon.ico` (Windows), `build/icon.icns` (Mac), and `build/icon.png` (512x512+, Linux), then add `"icon": "build/icon.ico"` etc. under the relevant platform key in `package.json`'s `build` section.
+A typical Linux build produces:
+
+```text
+dist/
+├── Local Chat-1.0.0.AppImage
+└── local-chat_1.0.0_amd64.deb
+```
+
+Electron Builder generally provides the most reliable results when packaging on the operating system for which the application is being built.
+
+---
+
+# Architecture
+
+The current system can be conceptually represented as:
+
+```text
+User
+ │
+ ▼
+Electron Interface
+ │
+ ▼
+Application Logic
+ │
+ ▼
+Ollama Local API
+ │
+ ▼
+Local Language Model
+ │
+ ▼
+Generated Response
+```
+
+This architecture deliberately maintains a distinction between presentation, application logic, and model inference.
+
+Such separation provides a foundation for introducing additional local tools without requiring fundamental changes to the model-serving layer.
+
+---
+
+# Development Roadmap
+
+The current implementation represents the conversational layer of a broader local AI system.
+
+## Phase I: Conversational Interface
+
+Completed or substantially implemented:
+
+* Electron desktop application
+* Ollama integration
+* Persistent conversations
+* Conversation search
+* Model selection
+* Temperature configuration
+* System-prompt configuration
+* Response regeneration
+* Response copying
+* Response cancellation
+* Linux packaging
+
+Planned:
+
+* Windows distribution
+* macOS distribution
+* Automated multi-platform releases
+
+---
+
+# Phase II: Project-Level Intelligence
+
+The next architectural step is to provide the model with structured access to software projects.
+
+Potential capabilities include:
+
+* Project directory selection
+* File-system exploration
+* Source-code inspection
+* Project-structure analysis
+* Cross-file search
+* Context-aware code generation
+* Code explanation
+* Dependency analysis
+* Documentation generation
+
+At this stage, the application would transition from a conventional conversational interface toward a software-engineering environment.
+
+---
+
+# Phase III: Local Coding Agent
+
+A subsequent objective is to provide controlled tool execution.
+
+A potential workflow is:
+
+```text
+User Request
+     │
+     ▼
+Task Analysis
+     │
+     ▼
+Project Inspection
+     │
+     ▼
+Plan Generation
+     │
+     ▼
+Proposed File Changes
+     │
+     ▼
+User Authorization
+     │
+     ▼
+File Modification
+     │
+     ▼
+Test Execution
+     │
+     ▼
+Error Analysis
+     │
+     ▼
+Code Correction
+     │
+     ▼
+Verification
+```
+
+Such an architecture would allow the model to participate in iterative software development rather than merely generating isolated code fragments.
+
+Potential operations include:
+
+* Creating source files
+* Modifying existing source files
+* Refactoring code
+* Generating tests
+* Executing tests
+* Interpreting compiler errors
+* Debugging applications
+* Generating documentation
+* Performing structured project analysis
+
+---
+
+# Security Model
+
+Introducing file-system and command-execution capabilities fundamentally changes the security requirements of the application.
+
+For this reason, future agent functionality should not provide unrestricted access to the host operating system.
+
+A permission-oriented architecture is preferable.
+
+For example:
+
+```text
+Read project files        Allowed
+Create source file        Allowed
+Modify source file        Requires authorization
+Execute test command      Requires authorization
+Execute arbitrary command Requires authorization
+Delete project            Restricted
+Read credentials          Restricted
+Access private keys       Restricted
+```
+
+The objective is to establish a clear security boundary between model-generated intentions and operations performed against the host system.
+
+The model should therefore be treated as an untrusted computational component whose access to external resources is mediated by explicit application-level tools and authorization policies.
+
+---
+
+# Long-Term Objective
+
+The long-term objective of Local Chat is to provide a local AI development environment in which language models can reason over software projects and interact with development tools while maintaining user control over data and system operations.
+
+A conceptual future architecture is:
+
+```text
+┌────────────────────────────────────────────┐
+│                Local Chat                  │
+├───────────────────┬────────────────────────┤
+│                   │                        │
+│   Project Model   │    AI Development      │
+│                   │        Agent           │
+│   File System     │                        │
+│   Source Code     │    Planning            │
+│   Dependencies    │    Code Generation     │
+│   Configuration   │    Modification        │
+│                   │    Testing             │
+│                   │    Debugging           │
+└───────────────────┴────────────────────────┘
+             │
+             ▼
+      Local Ollama Models
+```
+
+The fundamental design principle is local execution combined with explicit control.
+
+The objective is not merely to provide another chat interface, but to develop an environment in which local language models can become practical computational assistants for software development while preserving the user's authority over source code, files, and system operations.
+
+---
+
+# Contributing
+
+Contributions, technical discussions, bug reports, and feature proposals are welcome.
+
+To contribute:
+
+```bash
+git checkout -b feature/my-feature
+```
+
+Implement and test the changes, then:
+
+```bash
+git add .
+git commit -m "Add my feature"
+git push origin feature/my-feature
+```
+
+Open a pull request against the `main` branch.
+
+Architectural changes should preferably be discussed before implementation when they affect the application's security model, persistence layer, model interface, or tool-execution framework.
+
+---
+
+# License
+
+Local Chat is distributed under the MIT License.
+
+The MIT License permits use, modification, redistribution, and commercial use of the software, subject to the conditions specified by the license.
+
+---
+
+# Project
+
+Repository:
+
+https://github.com/Ahmed-bit-spec/GuiLocalAi
+
+Local Chat is an ongoing project focused on the intersection of local language models, desktop computing, software engineering automation, and privacy-preserving AI systems.
+
+**Local models. Local execution. User-controlled computation.**
