@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Local Chat</title>
+<link rel="stylesheet" href="styles/tailwind.css" />
+<link rel="stylesheet" href="styles/app.css" />
+</head>
+<body class="h-screen w-screen overflow-hidden bg-[#0a0a0a] text-gray-100 font-sans antialiased">
+
+<div class="flex h-full w-full">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar w-[280px] shrink-0 bg-[#0d0d0d] border-r border-[#1e1e1e] flex flex-col transition-all duration-200">
+    <div class="flex items-center justify-between px-4 h-14 border-b border-[#1e1e1e] shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-sm bg-white"></span>
+        <span class="sidebar-label text-sm font-medium tracking-tight">Local Chat</span>
+      </div>
+      <button id="sidebar-toggle" class="shrink-0 text-gray-500 hover:text-white p-1 rounded transition-colors" aria-label="Collapse sidebar">
+        <svg id="sidebar-toggle-icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+      </button>
+    </div>
+
+    <div class="p-3 shrink-0">
+      <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 bg-white text-black text-sm font-medium py-2 rounded-lg hover:bg-gray-200 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        <span class="sidebar-label">New chat</span>
+      </button>
+    </div>
+
+    <div class="px-3 pb-2 shrink-0 sidebar-label">
+      <div class="relative">
+        <svg class="w-4 h-4 text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"></path></svg>
+        <input id="chat-search" type="text" placeholder="Search chats" class="w-full bg-[#161616] border border-[#242424] rounded-lg pl-8 pr-3 py-1.5 text-sm placeholder-gray-500 focus:outline-none focus:border-gray-500" />
+      </div>
+    </div>
+
+    <div id="chat-list" class="flex-1 overflow-y-auto px-2 pb-2 space-y-0.5 sidebar-label"></div>
+
+    <div class="border-t border-[#1e1e1e] p-3 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2 sidebar-label">
+        <span id="connection-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
+        <span id="connection-text" class="text-xs text-gray-400">Checking&hellip;</span>
+      </div>
+      <button id="settings-btn" class="text-gray-500 hover:text-white p-1 rounded transition-colors" aria-label="Settings">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 flex flex-col min-w-0">
+
+    <!-- Header -->
+    <header class="h-14 shrink-0 border-b border-[#1e1e1e] flex items-center justify-between px-4">
+      <div class="flex items-center gap-3">
+        <button id="sidebar-toggle-mobile" class="text-gray-500 hover:text-white p-1 rounded transition-colors md:hidden">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <select id="model-selector" class="bg-[#111111] border border-[#242424] rounded-lg text-sm font-mono px-3 py-1.5 focus:outline-none focus:border-gray-500 max-w-[240px]"></select>
+      </div>
+      <button id="refresh-models-btn" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-[#161616] hover:bg-[#1c1c1c] px-2.5 py-1.5 rounded-lg transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        Refresh models
+      </button>
+    </header>
+
+    <!-- Chat area -->
+    <div id="chat-container" class="flex-1 overflow-y-auto">
+
+      <!-- Welcome screen -->
+      <div id="welcome-screen" class="h-full flex flex-col items-center justify-center px-6">
+        <div class="w-full max-w-xl">
+          <h1 class="text-2xl font-medium text-center mb-1">What are we working on?</h1>
+          <p class="text-sm text-gray-500 text-center mb-8">Runs fully offline through your local Ollama models.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button class="suggestion-card text-left p-3.5 rounded-xl border border-[#242424] bg-[#111111] hover:bg-[#161616] hover:border-[#333] transition-colors" data-prompt="Explain how a hash map works, with a small code example.">
+              <p class="text-sm text-gray-200">Explain how a hash map works</p>
+              <p class="text-xs text-gray-500 mt-0.5">with a small code example</p>
+            </button>
+            <button class="suggestion-card text-left p-3.5 rounded-xl border border-[#242424] bg-[#111111] hover:bg-[#161616] hover:border-[#333] transition-colors" data-prompt="Write a Python function that removes duplicate lines from a text file.">
+              <p class="text-sm text-gray-200">Write a Python function</p>
+              <p class="text-xs text-gray-500 mt-0.5">that removes duplicate lines from a file</p>
+            </button>
+            <button class="suggestion-card text-left p-3.5 rounded-xl border border-[#242424] bg-[#111111] hover:bg-[#161616] hover:border-[#333] transition-colors" data-prompt="Review this SQL query for performance issues and suggest fixes.">
+              <p class="text-sm text-gray-200">Review a SQL query</p>
+              <p class="text-xs text-gray-500 mt-0.5">for performance issues</p>
+            </button>
+            <button class="suggestion-card text-left p-3.5 rounded-xl border border-[#242424] bg-[#111111] hover:bg-[#161616] hover:border-[#333] transition-colors" data-prompt="Give me a plain-English explanation of how git rebase works.">
+              <p class="text-sm text-gray-200">Explain git rebase</p>
+              <p class="text-xs text-gray-500 mt-0.5">in plain English</p>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="messages-container" class="hidden max-w-3xl mx-auto w-full px-6 py-6 space-y-6"></div>
+    </div>
+
+    <!-- Input -->
+    <div class="shrink-0 border-t border-[#1e1e1e] p-4">
+      <form id="message-form" class="max-w-3xl mx-auto flex items-end gap-2 bg-[#111111] border border-[#242424] rounded-2xl p-2 focus-within:border-gray-500 transition-colors">
+        <textarea id="message-input" rows="1" placeholder="Message your local model&hellip;" class="flex-1 bg-transparent resize-none focus:outline-none text-sm py-2 px-2 max-h-[150px] placeholder-gray-500"></textarea>
+        <button type="button" id="clear-btn" class="text-gray-500 hover:text-white p-2 rounded-lg transition-colors" aria-label="Clear input">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <button type="submit" id="send-btn" class="bg-white text-black p-2 rounded-lg hover:bg-gray-200 transition-colors" aria-label="Send message">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-6 6m6-6l6 6"></path></svg>
+        </button>
+        <button type="button" id="stop-btn" class="hidden bg-white text-black p-2 rounded-lg hover:bg-gray-200 transition-colors" aria-label="Stop generating">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"></rect></svg>
+        </button>
+      </form>
+      <p class="text-center text-[11px] text-gray-600 mt-2">Everything stays on this machine &mdash; no data leaves your computer.</p>
+    </div>
+
+  </main>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
+  <div class="w-full max-w-md bg-[#111111] border border-[#242424] rounded-2xl overflow-hidden">
+    <div class="flex items-center justify-between px-5 h-14 border-b border-[#1e1e1e]">
+      <h2 class="text-sm font-medium">Settings</h2>
+      <button id="settings-close-btn" class="text-gray-500 hover:text-white p-1 rounded transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <div class="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+
+      <div>
+        <label class="block text-xs text-gray-400 mb-1.5">Ollama server URL</label>
+        <input id="ollama-url-input" type="text" class="w-full bg-[#161616] border border-[#242424] rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-gray-500" />
+        <div class="flex items-center justify-between mt-2">
+          <span id="settings-connection-status" class="text-xs text-gray-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gray-500"></span> Not tested yet</span>
+          <button id="test-connection-btn" class="text-xs text-gray-300 hover:text-white bg-[#1c1c1c] hover:bg-[#242424] px-2.5 py-1 rounded-lg transition-colors">Test</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs text-gray-400">Default model</label>
+          <button id="refresh-models-btn-settings" class="text-xs text-gray-500 hover:text-white transition-colors">Refresh</button>
+        </div>
+        <select id="default-model-select" class="w-full bg-[#161616] border border-[#242424] rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-gray-500">
+          <option value="">Select a model&hellip;</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs text-gray-400">Temperature</label>
+          <span id="temperature-value" class="text-xs text-gray-300 font-mono">0.7</span>
+        </div>
+        <input id="temperature-input" type="range" min="0" max="1.5" step="0.05" value="0.7" class="w-full accent-white" />
+      </div>
+
+      <div>
+        <label class="block text-xs text-gray-400 mb-1.5">System prompt</label>
+        <textarea id="system-prompt-input" rows="3" placeholder="Optional instructions applied to every chat" class="w-full bg-[#161616] border border-[#242424] rounded-lg px-3 py-2 text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-gray-500"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs text-gray-400 mb-1.5">Theme</label>
+        <div class="grid grid-cols-3 gap-1.5 bg-[#161616] border border-[#242424] rounded-lg p-1">
+          <button id="theme-dark" type="button" class="bg-white text-black text-xs py-1.5 rounded-md transition-colors">Dark</button>
+          <button id="theme-light" type="button" class="text-xs text-gray-300 py-1.5 rounded-md transition-colors">Light</button>
+          <button id="theme-system" type="button" class="text-xs text-gray-300 py-1.5 rounded-md transition-colors">System</button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <label for="confirm-delete-toggle" class="text-xs text-gray-400">Confirm before deleting a chat</label>
+        <input id="confirm-delete-toggle" type="checkbox" class="accent-white w-4 h-4" checked />
+      </div>
+
+      <div class="pt-2 border-t border-[#1e1e1e]">
+        <button id="clear-all-chats-btn" class="w-full text-xs text-red-400 hover:text-red-300 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 py-2 rounded-lg transition-colors">
+          Delete all conversations
+        </button>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-[#1e1e1e]">
+      <button id="save-settings-btn" class="w-full bg-white text-black text-sm font-medium py-2 rounded-lg hover:bg-gray-200 transition-colors">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>
